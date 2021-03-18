@@ -1,0 +1,39 @@
+{
+  "simulator_options": {
+    "strategy": "preferred_sequence_constructive_heuristic"
+  },
+  "time_horizon": {
+    "start_time": "2020-01-01T00:00:00Z",
+    "end_time": "2020-02-01T00:00:00Z"
+  },
+  "schedule": [],
+  "preferred_sequence": {},
+  "operation_requirement_groups": [
+    {
+      "id": 1,
+      "operation": 1,
+      "lateral_length_group": 1,
+      "duration": "P10D"
+    }
+  ],
+  "operations": [
+    {
+      "id": 1,
+      "name": "Operation 1",
+      "order": 1,
+      "machines": [
+        {
+          "id": 1,
+          "name": "Machine 1"
+        }
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "name": "Job 1",
+      "operation_requirement_group": 1
+    }
+  ]
+}

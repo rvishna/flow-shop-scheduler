@@ -6,10 +6,10 @@ static const std::string PathToName = "name";
 
 #ifdef USE_CAMEL_CASE
 static const std::string PathToStartTime = "startTime";
-static const std::string PathToOperationRequirementGroupId = "operationRequirementGroupId";
+static const std::string PathToOperationRequirementGroupId = "operationRequirementGroup";
 #else
 static const std::string PathToStartTime = "start_time";
-static const std::string PathToOperationRequirementGroupId = "operation_requirement_group_id";
+static const std::string PathToOperationRequirementGroupId = "operation_requirement_group";
 #endif
 
 std::string Job::PathToId()

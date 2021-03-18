@@ -19,3 +19,4 @@ function(custom_add_test)
 endfunction()
 
 add_subdirectory(unit_tests)
+add_subdirectory(regression_tests)

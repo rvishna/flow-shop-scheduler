@@ -38,13 +38,13 @@ ExecutionController::ExecutionControllerImpl::ExecutionControllerImpl(std::istre
     inputContext_->add(std::make_unique<Schedule>());
     simulationStrategy_->setDataContext(inputContext_);
 
-    spdlog::info("Starting flow shop scheduler with {} operations, {} jobs, {} time periods", inputContext_->get<OperationSet>().size(), inputContext_->get<JobSet>().size(), inputContext_->get<TimeHorizon>().numberOfTimePeriods());
+    spdlog::info("Starting flow shop scheduler with {} operation(s), {} job(s), {} time period(s)", inputContext_->get<OperationSet>().size(), inputContext_->get<JobSet>().size(), inputContext_->get<TimeHorizon>().numberOfTimePeriods());
 }
 
 void ExecutionController::ExecutionControllerImpl::execute() const
 {
     auto schedule = simulationStrategy_->generate();
-    spdlog::info("Generated schedule with {} events using strategy '{}'", schedule.size(), inputContext_->get<SimulatorOptions>().strategy);
+    spdlog::info("Generated schedule with {} event(s) using strategy '{}'", schedule.size(), inputContext_->get<SimulatorOptions>().strategy);
     json j;
     schedule.set(j);
     os_ << j;

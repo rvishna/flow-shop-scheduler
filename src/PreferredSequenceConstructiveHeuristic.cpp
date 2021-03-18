@@ -172,9 +172,12 @@ void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
 
     numberOfJobs_ = 0;
 
-    const auto& jobs = dataContext_->get<JobSet>();
-    numberOfJobs_ = static_cast<int>(jobs.size());
-    std::transform(jobs.begin(), jobs.end(), std::back_inserter(jobIds_), [](const auto& job) { return job.first; });
+    for(const auto& [jobId, job] : dataContext_->get<JobSet>())
+    {
+        jobIds_.push_back(jobId);
+        jobs_[jobId] = &job;
+        numberOfJobs_++;
+    }
 
     for(auto [machineId, machine] : machines_)
     {
