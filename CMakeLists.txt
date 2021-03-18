@@ -23,3 +23,4 @@ link_directories("${Boost_LIBRARY_DIRS}")
 enable_testing()
 
 add_subdirectory(src)
+add_subdirectory(tests)
