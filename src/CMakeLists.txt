@@ -1,14 +1,36 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(scheduler
-  Exception.h
-  ExecutionController.cpp
-  ExecutionController.h
-  ServiceController.cpp
-  ServiceController.h
-  Utility.cpp
-  Utility.h
-  )
+DataContext.cpp
+DataContext.h
+Exception.h
+ExecutionController.cpp
+ExecutionController.h
+Job.cpp
+Job.h
+Machine.cpp
+Machine.h
+ModelSet.h
+Operation.cpp
+Operation.h
+OperationRequirementGroup.cpp
+OperationRequirementGroup.h
+PreferredSequenceConstructiveHeuristic.cpp
+PreferredSequenceConstructiveHeuristic.h
+ScheduleEvent.cpp
+ScheduleEvent.h
+SerializableArray.h
+ServiceController.cpp
+ServiceController.h
+SimulationStrategy.cpp
+SimulationStrategy.h
+SimulatorOptions.cpp
+SimulatorOptions.h
+TimeHorizon.cpp
+TimeHorizon.h
+Utility.cpp
+Utility.h
+)
 
 set(TARGET scheduler_cli)
 add_executable(${TARGET} main.cpp)

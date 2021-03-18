@@ -44,6 +44,72 @@ private:
     std::string message_;
 };
 
+struct MandatoryFieldMissing : public Exception
+{
+    MandatoryFieldMissing(const char* message)
+    : Exception(message)
+    {
+    }
+
+    MandatoryFieldMissing(const std::string& message)
+    : Exception(message)
+    {
+    }
+
+    static MandatoryFieldMissing Create(const std::string& name, const json& j, const std::string& message)
+    {
+        std::ostringstream oss;
+        oss << "Missing a mandatory field when deserializing " << name << std::endl
+            << std::setw(4) << j << std::endl
+            << "Parser reported error: " << message;
+        return MandatoryFieldMissing(oss.str());
+    }
+};
+
+struct InvalidType : public Exception
+{
+    InvalidType(const char* message)
+    : Exception(message)
+    {
+    }
+    InvalidType(const std::string& message)
+    : Exception(message)
+    {
+    }
+
+    static InvalidType Create(const std::string& name, const json& j, const std::string& message)
+    {
+        std::ostringstream oss;
+        oss << "Invalid type for field when deserializing " << name << std::endl
+            << std::setw(4) << j << std::endl
+            << "Parser reported error: " << message;
+        return InvalidType(oss.str());
+    }
+};
+
+struct DuplicatePrimaryKey : public Exception
+{
+    DuplicatePrimaryKey(const char* message)
+    : Exception(message)
+    {
+    }
+    DuplicatePrimaryKey(const std::string& message)
+    : Exception(message)
+    {
+    }
+
+    template<typename T>
+    static DuplicatePrimaryKey Create(std::size_t id, const std::pair<const std::size_t, T>& existing_value, const std::pair<const std::size_t, T>& new_value)
+    {
+        std::ostringstream oss;
+        oss << "Duplicate value " << id << " for primary key field \"" << T::PathToId() << "\" for " << T::Name(true) << ":" << std::endl
+            << std::setw(4) << json(existing_value) << std::endl
+            << "and" << std::endl
+            << std::setw(4) << json(new_value);
+        return DuplicatePrimaryKey(oss.str());
+    }
+};
+
 } // namespace flow_shop_scheduler
 
 #endif
