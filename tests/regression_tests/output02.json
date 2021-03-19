@@ -1,0 +1,30 @@
+[
+    {
+        "operation": 1,
+        "job": 3,
+        "machine": 1,
+        "start_time": "2020-01-01T00:00:00.000000Z",
+        "duration": "P1W3D"
+    },
+    {
+        "operation": 1,
+        "job": 1,
+        "machine": 1,
+        "start_time": "2020-01-11T00:00:00.000000Z",
+        "duration": "P1W3D"
+    },
+    {
+        "operation": 1,
+        "job": 2,
+        "machine": 1,
+        "start_time": "2020-01-21T00:00:00.000000Z",
+        "duration": "P1W3D"
+    },
+    {
+        "operation": 1,
+        "job": 4,
+        "machine": 1,
+        "start_time": "2020-01-31T00:00:00.000000Z",
+        "duration": "P1W3D"
+    }
+]

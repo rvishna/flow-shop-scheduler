@@ -36,4 +36,10 @@ TEST_CASE("Simulator regression tests")
         auto diff = run_test_case("input01.json", "output01.json");
         CHECK(diff == "[]"_json);
     }
+
+    SECTION("4 jobs with specified sequence")
+    {
+        auto diff = run_test_case("input02.json", "output02.json");
+        CHECK(diff == "[]"_json);
+    }
 }
