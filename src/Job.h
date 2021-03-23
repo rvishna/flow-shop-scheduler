@@ -2,6 +2,8 @@
 #define JOB_H
 
 #include "ModelSet.h"
+#include "OperationRequirement.h"
+#include "SerializableArray.h"
 #include "TimeHorizon.h"
 
 namespace flow_shop_scheduler {
@@ -10,7 +12,7 @@ class Job
 {
 public:
     std::string name;
-    std::size_t operationRequirementGroupId;
+    SerializableArray<OperationRequirement> operationRequirements;
 
     int startTimePeriod() const { return startTimePeriod_; }
 

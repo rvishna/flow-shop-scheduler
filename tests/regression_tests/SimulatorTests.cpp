@@ -2,6 +2,7 @@
 
 #include <catch2/catch.hpp>
 #include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 
 #include "ExecutionController.h"
 #include "Utility.h"
@@ -18,6 +19,8 @@ json run_test_case(const std::string& inputFilename, const std::string& outputFi
 
     ifs.open(inputFilename);
     std::ostringstream oss;
+
+    spdlog::set_level(spdlog::level::trace);
 
     ExecutionController executionController(ifs, oss);
     executionController.execute();
@@ -40,6 +43,12 @@ TEST_CASE("Simulator regression tests")
     SECTION("4 jobs with specified sequence")
     {
         auto diff = run_test_case("input02.json", "output02.json");
+        CHECK(diff == "[]"_json);
+    }
+
+    SECTION("Multiple operations")
+    {
+        auto diff = run_test_case("input03.json", "output03.json");
         CHECK(diff == "[]"_json);
     }
 }

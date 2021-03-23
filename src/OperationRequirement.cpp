@@ -1,4 +1,4 @@
-#include "OperationRequirementGroup.h"
+#include "OperationRequirement.h"
 
 namespace flow_shop_scheduler {
 
@@ -15,21 +15,7 @@ static const std::string PathToDailyCost = "daily_cost";
 static const double DefaultFixedCost = 0;
 static const double DefaultDailyCost = 0;
 
-std::string OperationRequirementGroup::PathToId()
-{
-    return "id";
-}
-
-std::string OperationRequirementGroupSet::BasePath()
-{
-#ifdef USE_CAMEL_CASE
-    return "/operationRequirementGroups";
-#else
-    return "/operation_requirement_groups";
-#endif
-}
-
-void OperationRequirementGroup::setDataContext(std::shared_ptr<DataContext> dataContext)
+void OperationRequirement::setDataContext(std::shared_ptr<DataContext> dataContext)
 {
     assert(dataContext);
     const auto& timeHorizon = dataContext->get<TimeHorizon>();
@@ -39,16 +25,15 @@ void OperationRequirementGroup::setDataContext(std::shared_ptr<DataContext> data
         numberOfTimePeriods_++;
 }
 
-void to_json(json& j, const std::pair<const std::size_t, OperationRequirementGroup>& operationRequirement)
+void to_json(json& j, const OperationRequirement& operationRequirement)
 {
-    j[OperationRequirementGroup::PathToId()] = operationRequirement.first;
-    j[PathToOperationId] = operationRequirement.second.operationId;
-    j[PathToDuration] = operationRequirement.second.duration_;
-    j[PathToFixedCost] = operationRequirement.second.fixedCost;
-    j[PathToDailyCost] = operationRequirement.second.dailyCost_;
+    j[PathToOperationId] = operationRequirement.operationId;
+    j[PathToDuration] = operationRequirement.duration_;
+    j[PathToFixedCost] = operationRequirement.fixedCost;
+    j[PathToDailyCost] = operationRequirement.dailyCost_;
 }
 
-void from_json(const json& j, OperationRequirementGroup& operationRequirement)
+void from_json(const json& j, OperationRequirement& operationRequirement)
 {
     j.at(PathToOperationId).get_to(operationRequirement.operationId);
     j.at(PathToDuration).get_to(operationRequirement.duration_);

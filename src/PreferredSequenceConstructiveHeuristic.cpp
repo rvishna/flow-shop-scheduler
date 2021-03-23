@@ -1,7 +1,8 @@
 #include <unordered_map>
 
+#include <spdlog/spdlog.h>
+
 #include "Operation.h"
-#include "OperationRequirementGroup.h"
 #include "PreferredSequenceConstructiveHeuristic.h"
 
 namespace flow_shop_scheduler {
@@ -77,10 +78,10 @@ public:
 private:
     std::shared_ptr<DataContext> dataContext_;
 
-    int numberOfTimePeriods_;
-    int numberOfOperations_;
-    int numberOfJobs_;
-    int numberOfMachines_;
+    unsigned int numberOfTimePeriods_;
+    unsigned int numberOfOperations_;
+    unsigned int numberOfJobs_;
+    unsigned int numberOfMachines_;
 
     std::unordered_map<std::size_t, const Job*> jobs_;
     std::unordered_map<std::size_t, const Machine*> machines_;
@@ -99,16 +100,15 @@ private:
 
     std::unordered_map<std::size_t, std::unordered_map<std::size_t, OperationJobInfo>> jobOperationInfo_;
     std::unordered_map<std::size_t, std::vector<bool>> machineAvailability_;
-    std::unordered_map<std::size_t, std::unordered_map<std::size_t, const OperationRequirementGroup*>> jobOperationRequirements_;
+    std::unordered_map<std::size_t, std::unordered_map<std::size_t, const OperationRequirement*>> jobOperationRequirements_;
 
     bool isMachineAvailable(std::size_t machineId, int startTimePeriod, int numberOfTimePeriods = 1) const;
     void addScheduleEvent(Schedule& schedule, const ScheduleEvent& scheduleEvent, bool updateCache = true);
-    bool isFeasible(Schedule& schedule, const ScheduleEvent& scheduleEvent) const;
-    void releaseMachine(const Schedule& schedule);
 };
 
 void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructiveHeuristicStrategyImpl::setPreferredSequence(const detail::PreferredSequence& preferredSequence)
 {
+    spdlog::debug("Setting preferred sequence of machines");
     for(auto operationId : operationIds_)
     {
         if(!preferredSequence.operationMachineSequence.count(operationId))
@@ -128,6 +128,7 @@ void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
         });
     }
 
+    spdlog::debug("Setting preferred sequence of jobs");
     std::unordered_map<std::size_t, int> jobIdToPriorityMap;
     std::transform(preferredSequence.jobSequence.begin(), preferredSequence.jobSequence.end(), std::inserter(jobIdToPriorityMap, jobIdToPriorityMap.end()), [jobPriority = 0](std::size_t jobId) mutable { return std::make_pair(jobId, jobPriority++); });
     std::sort(jobIds_.begin(), jobIds_.end(), [&jobIdToPriorityMap](const auto& lhs, const auto& rhs) {
@@ -147,9 +148,11 @@ void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
     dataContext_->parse(std::cin);
 
     numberOfTimePeriods_ = dataContext_->get<TimeHorizon>().numberOfTimePeriods();
+    spdlog::debug("Number of time periods is {}", numberOfTimePeriods_);
 
     const auto& operations = dataContext_->get<OperationSet>();
     numberOfOperations_ = static_cast<int>(operations.size());
+    spdlog::debug("Number of operations is {}", numberOfOperations_);
 
     // Order operations according to the 'order' field
     std::transform(operations.begin(), operations.end(), std::back_inserter(operationIds_), [](const auto& operation) { return operation.first; });
@@ -170,6 +173,8 @@ void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
         }
     }
 
+    spdlog::debug("Number of machines is {}", numberOfMachines_);
+
     numberOfJobs_ = 0;
 
     for(const auto& [jobId, job] : dataContext_->get<JobSet>())
@@ -179,6 +184,8 @@ void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
         numberOfJobs_++;
     }
 
+    spdlog::debug("Number of jobs is {}", numberOfJobs_);
+
     for(auto [machineId, machine] : machines_)
     {
         auto& machineAvailability = machineAvailability_[machineId];
@@ -187,28 +194,34 @@ void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
             machineAvailability[timePeriod] = true;
     }
 
-    const auto& operationRequirementGroups = dataContext_->get<OperationRequirementGroupSet>();
-
-    for(auto operationId : operationIds_)
+    for(auto [jobId, job_] : jobs_)
     {
-        for(auto [jobId, job_] : jobs_)
+        for(const auto& operationRequirement : job_->operationRequirements)
         {
-            jobOperationInfo_[jobId][operationId].isScheduled = false;
+            auto operationId = operationRequirement.operationId;
+            jobOperationRequirements_[jobId][operationId] = &operationRequirement;
+            spdlog::trace("Found operation requirement\n{}\nfor operation \"{}\", job\n{}",
+                          json(operationRequirement).dump(4),
+                          operations[operationId].name,
+                          json(std::pair<const std::size_t, Job>({jobId, *job_})).dump(4));
+        }
 
-            const auto& job = *job_;
-
-            auto operationRequirementGroupIt = operationRequirementGroups.find(job.operationRequirementGroupId);
-            if(operationRequirementGroupIt == operationRequirementGroups.end())
+        for(auto operationId : operationIds_)
+        {
+            if(!jobOperationRequirements_[jobId].count(operationId))
             {
                 std::ostringstream oss;
-                oss << "Missing operation requirement group for job" << std::endl
-                    << std::setw(4) << json(std::pair<const std::size_t, Job>({jobId, job}));
+                oss << "Missing operation requirement for operation \"" << operations[operationId].name
+                    << "\", job " << std::endl
+                    << std::setw(4) << json(std::pair<const std::size_t, Job>({jobId, *job_}));
                 throw Exception(oss.str());
             }
-
-            jobOperationRequirements_[jobId][operationId] = &operationRequirementGroupIt->second;
         }
     }
+
+    for(auto operationId : operationIds_)
+        for(auto [jobId, job_] : jobs_)
+            jobOperationInfo_[jobId][operationId].isScheduled = false;
 
     const auto& preferredSequence = dataContext_->get<detail::PreferredSequence>();
     setPreferredSequence(preferredSequence);
@@ -223,6 +236,7 @@ bool PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
 
 void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructiveHeuristicStrategyImpl::addScheduleEvent(Schedule& schedule, const ScheduleEvent& scheduleEvent, bool updateCache)
 {
+    spdlog::trace("Adding schedule event\n{}", json(scheduleEvent).dump(4));
     schedule.push_back(scheduleEvent);
 
     if(scheduleEvent.machineId.has_value())
@@ -238,29 +252,6 @@ void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructi
     }
 }
 
-bool PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructiveHeuristicStrategyImpl::isFeasible(Schedule&, const ScheduleEvent& scheduleEvent) const
-{
-    // Machine is busy or not available.
-    if(scheduleEvent.machineId.has_value() && !isMachineAvailable(scheduleEvent.machineId.value(), scheduleEvent.startTimePeriod(), scheduleEvent.numberOfTimePeriods()))
-    {
-        return false;
-    }
-
-    // Job cannot be started yet.
-    if(scheduleEvent.startTimePeriod() < jobs_.at(scheduleEvent.jobId)->startTimePeriod())
-    {
-        return false;
-    }
-
-    return true;
-}
-
-void PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructiveHeuristicStrategyImpl::releaseMachine(const Schedule& schedule)
-{
-    for(auto scheduleEvent : schedule)
-        std::fill_n(machineAvailability_[scheduleEvent.machineId.value()].begin() + scheduleEvent.startTimePeriod(), scheduleEvent.numberOfTimePeriods(), true);
-}
-
 Schedule PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstructiveHeuristicStrategyImpl::generate()
 {
     Schedule schedule;
@@ -270,66 +261,50 @@ Schedule PreferredSequenceConstructiveHeuristicStrategy::PreferredSequenceConstr
 
     const auto& operations = dataContext_->get<OperationSet>();
 
-    for(auto operationIndex = 0u; operationIndex < operationIds_.size(); ++operationIndex)
+    for(auto jobId : jobIds_)
     {
-        auto operationId = operationIds_[operationIndex];
-        const auto& operation = operations[operationId];
-
-        if(!operation.requiresMachine)
+        for(auto operationIndex = 0u; operationIndex < operationIds_.size(); ++operationIndex)
         {
-            for(auto jobId : jobIds_)
+            auto operationId = operationIds_[operationIndex];
+            const auto& operation = operations[operationId];
+
+            const auto& currentJobOperationInfo = jobOperationInfo_.at(jobId).at(operationIds_[operationIndex]);
+            if(currentJobOperationInfo.isScheduled)
+                continue;
+
+            int startTimePeriod = jobs_.at(jobId)->startTimePeriod();
+
+            if(operationIndex > 0)
             {
-                unsigned int numberOfTimePeriods = jobOperationRequirements_.at(jobId).at(operationId)->numberOfTimePeriods();
-                if(operationIndex == 0)
-                {
-                    addScheduleEvent(schedule, ScheduleEvent(dataContext_, operationIds_[0], jobId, std::nullopt, 0, numberOfTimePeriods));
-                }
-                else
-                {
-                    const auto& previousOperationWellInfo = jobOperationInfo_.at(jobId).at(operationIds_[operationIndex - 1]);
-                    if(!previousOperationWellInfo.isScheduled || previousOperationWellInfo.startTimePeriod + previousOperationWellInfo.numberOfTimePeriods >= static_cast<unsigned int>(numberOfTimePeriods_))
-                        continue;
-                    addScheduleEvent(schedule, ScheduleEvent(dataContext_, operationIds_[operationIndex], jobId, std::nullopt, previousOperationWellInfo.startTimePeriod + previousOperationWellInfo.numberOfTimePeriods, numberOfTimePeriods));
-                }
+                const auto& previousJobOperationInfo = jobOperationInfo_.at(jobId).at(operationIds_[operationIndex - 1]);
+                if(previousJobOperationInfo.isScheduled)
+                    startTimePeriod = previousJobOperationInfo.startTimePeriod + previousJobOperationInfo.numberOfTimePeriods;
             }
-        }
-        else
-        {
-            for(int timePeriod = 0; timePeriod < numberOfTimePeriods_; ++timePeriod)
+
+            unsigned int numberOfTimePeriods = jobOperationRequirements_.at(jobId).at(operationId)->numberOfTimePeriods();
+
+            spdlog::trace("Trying to schedule operation \"{}\" for job \"{}\" from time period {} for {} time periods",
+                          operation.name, jobs_.at(jobId)->name, startTimePeriod, numberOfTimePeriods);
+
+            if(!operation.requiresMachine)
             {
-                for(auto machineId : operationMachineIds_.at(operationId))
+                addScheduleEvent(schedule, ScheduleEvent(dataContext_, operationId, jobId, std::nullopt, startTimePeriod, numberOfTimePeriods));
+            }
+            else
+            {
+                for(int timePeriod = startTimePeriod; timePeriod + numberOfTimePeriods < numberOfTimePeriods_; ++timePeriod)
                 {
-                    if(!isMachineAvailable(machineId, timePeriod))
+                    for(auto machineId : operationMachineIds_.at(operationId))
                     {
-                        continue;
-                    }
-
-                    for(auto jobId : jobIds_)
-                    {
-                        const auto& currentJobOperationInfo = jobOperationInfo_.at(jobId).at(operationIds_[operationIndex]);
-                        if(currentJobOperationInfo.isScheduled)
+                        if(isMachineAvailable(machineId, timePeriod, numberOfTimePeriods))
                         {
-                            continue;
-                        }
-
-                        if(operationIndex > 0)
-                        {
-                            const auto& previousJobOperationInfo = jobOperationInfo_.at(jobId).at(operationIds_[operationIndex - 1]);
-                            if(!previousJobOperationInfo.isScheduled || static_cast<unsigned int>(timePeriod) < previousJobOperationInfo.startTimePeriod + previousJobOperationInfo.numberOfTimePeriods)
-                            {
-                                break;
-                            }
-                        }
-
-                        unsigned int numberOfTimePeriods = jobOperationRequirements_.at(jobId).at(operationId)->numberOfTimePeriods();
-
-                        ScheduleEvent scheduleEvent(dataContext_, operationId, jobId, machineId, timePeriod, numberOfTimePeriods);
-                        if(!isFeasible(schedule, scheduleEvent))
-                        {
+                            addScheduleEvent(schedule, ScheduleEvent(dataContext_, operationId, jobId, machineId, timePeriod, numberOfTimePeriods));
                             break;
                         }
-                        addScheduleEvent(schedule, scheduleEvent);
                     }
+
+                    if(currentJobOperationInfo.isScheduled)
+                        break;
                 }
             }
         }

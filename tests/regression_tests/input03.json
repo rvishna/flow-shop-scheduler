@@ -1,0 +1,122 @@
+{
+  "simulator_options": {
+    "strategy": "preferred_sequence_constructive_heuristic"
+  },
+  "time_horizon": {
+    "start_time": "2020-01-01T00:00:00Z",
+    "end_time": "2040-01-01T00:00:00Z"
+  },
+  "schedule": [],
+  "preferred_sequence": {
+    "job_sequence": [3, 4, 1, 2]
+  },
+  "operations": [
+    {
+      "id": 1,
+      "name": "Operation 1",
+      "order": 1,
+      "machines": [
+        {
+          "id": 1,
+          "name": "Machine 1"
+        },
+        {
+          "id": 2,
+          "name": "Machine 2",
+          "start_time": "2020-01-15T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Operation 2",
+      "order": 2,
+      "requires_machine": false
+    },
+    {
+      "id": 3,
+      "name": "Operation 3",
+      "order": 3,
+      "machines": [
+        {
+          "id": 3,
+          "name": "Machine 3"
+        }
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "name": "Job 1",
+      "operation_requirements": [
+        {
+          "operation": 1,
+          "duration": "P10D"
+        },
+        {
+          "operation": 2,
+          "duration": "P5D"
+        },
+        {
+          "operation": 3,
+          "duration": "P20Y"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Job 2",
+      "operation_requirements": [
+        {
+          "operation": 1,
+          "duration": "P20D"
+        },
+        {
+          "operation": 2,
+          "duration": "P0D"
+        },
+        {
+          "operation": 3,
+          "duration": "P15Y"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Job 3",
+      "operation_requirements": [
+        {
+          "operation": 1,
+          "duration": "P10D"
+        },
+        {
+          "operation": 2,
+          "duration": "P5D"
+        },
+        {
+          "operation": 3,
+          "duration": "P20Y"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Job 4",
+      "operation_requirements": [
+        {
+          "operation": 1,
+          "duration": "P20D"
+        },
+        {
+          "operation": 2,
+          "duration": "P0D"
+        },
+        {
+          "operation": 3,
+          "duration": "P15Y"
+        }
+      ]
+    }
+  ]
+}

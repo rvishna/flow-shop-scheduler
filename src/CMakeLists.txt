@@ -13,8 +13,8 @@ Machine.h
 ModelSet.h
 Operation.cpp
 Operation.h
-RequirementGroup.cpp
-RequirementGroup.h
+OperationRequirement.cpp
+OperationRequirement.h
 PreferredSequenceConstructiveHeuristic.cpp
 PreferredSequenceConstructiveHeuristic.h
 ScheduleEvent.cpp

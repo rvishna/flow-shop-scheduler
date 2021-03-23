@@ -4,7 +4,6 @@
 #include "ExecutionController.h"
 #include "Job.h"
 #include "Operation.h"
-#include "OperationRequirementGroup.h"
 #include "SimulationStrategy.h"
 #include "SimulatorOptions.h"
 
@@ -33,7 +32,6 @@ ExecutionController::ExecutionControllerImpl::ExecutionControllerImpl(std::istre
     simulationStrategy_ = SimulationStrategy::Factory(inputContext_->get<SimulatorOptions>().strategy);
     inputContext_->add(std::make_unique<TimeHorizon>());
     inputContext_->add(std::make_unique<OperationSet>());
-    inputContext_->add(std::make_unique<OperationRequirementGroupSet>());
     inputContext_->add(std::make_unique<JobSet>());
     inputContext_->add(std::make_unique<Schedule>());
     simulationStrategy_->setDataContext(inputContext_);

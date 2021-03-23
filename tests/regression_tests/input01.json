@@ -8,14 +8,6 @@
   },
   "schedule": [],
   "preferred_sequence": {},
-  "operation_requirement_groups": [
-    {
-      "id": 1,
-      "operation": 1,
-      "lateral_length_group": 1,
-      "duration": "P10D"
-    }
-  ],
   "operations": [
     {
       "id": 1,
@@ -33,7 +25,12 @@
     {
       "id": 1,
       "name": "Job 1",
-      "operation_requirement_group": 1
+      "operation_requirements": [
+        {
+          "operation": 1,
+          "duration": "P10D"
+        }
+      ]
     }
   ]
 }

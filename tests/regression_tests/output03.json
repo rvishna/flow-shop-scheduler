@@ -1,0 +1,65 @@
+[
+  {
+    "operation": 1,
+    "job": 3,
+    "machine": 1,
+    "start_time": "2020-01-01T00:00:00.000000Z",
+    "duration": "P1W3D"
+  },
+  {
+    "operation": 2,
+    "job": 3,
+    "machine": null,
+    "start_time": "2020-01-11T00:00:00.000000Z",
+    "duration": "P5D"
+  },
+  {
+    "operation": 1,
+    "job": 4,
+    "machine": 1,
+    "start_time": "2020-01-11T00:00:00.000000Z",
+    "duration": "P2W6D"
+  },
+  {
+    "operation": 2,
+    "job": 4,
+    "machine": null,
+    "start_time": "2020-01-31T00:00:00.000000Z",
+    "duration": "PT0S"
+  },
+  {
+    "operation": 3,
+    "job": 4,
+    "machine": 3,
+    "start_time": "2020-01-31T00:00:00.000000Z",
+    "duration": "P15YT8H42M"
+  },
+  {
+    "operation": 1,
+    "job": 1,
+    "machine": 2,
+    "start_time": "2020-01-15T00:00:00.000000Z",
+    "duration": "P1W3D"
+  },
+  {
+    "operation": 2,
+    "job": 1,
+    "machine": null,
+    "start_time": "2020-01-25T00:00:00.000000Z",
+    "duration": "P5D"
+  },
+  {
+    "operation": 1,
+    "job": 2,
+    "machine": 2,
+    "start_time": "2020-01-25T00:00:00.000000Z",
+    "duration": "P2W6D"
+  },
+  {
+    "operation": 2,
+    "job": 2,
+    "machine": null,
+    "start_time": "2020-02-14T00:00:00.000000Z",
+    "duration": "PT0S"
+  }
+]
